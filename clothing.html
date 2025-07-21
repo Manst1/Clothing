@@ -115,7 +115,7 @@
                 <div class="mb-4">
                     <label class="inline-flex items-center mr-4">
                         <input type="radio" name="flashcard-mode" value="random" checked class="mr-2">
-                        <span>Random (with cooldown)</span>
+                        <span>Random</span>
                     </label>
                     <label class="inline-flex items-center">
                         <input type="radio" name="flashcard-mode" value="alphabetical" class="mr-2">
@@ -370,8 +370,11 @@
             testSubmit.addEventListener('click', checkAnswer);
             skipTestBtn.addEventListener('click', skipQuestion);
             testInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') checkAnswer();
-            });
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent form submission or other default behavior
+        checkAnswer();
+    }
+});
         }
         
         function getRandomTestIndex() {
@@ -402,23 +405,33 @@
             updateTestProgress();
         }
         
-        function checkAnswer() {
-            const userInput = testInput.value.trim().toLowerCase();
-            const correctAnswer = animals[currentTestIndex].translation.toLowerCase();
-            
-            if (userInput === correctAnswer) {
-                testFeedback.textContent = 'Correct!';
-                testFeedback.className = 'text-lg mt-4 text-center text-green-600';
-                setTimeout(() => {
-                    currentTestIndex = getRandomTestIndex();
-                    showTestQuestion();
-                }, 1000);
-            } else {
-                testFeedback.textContent = `Incorrect. The correct answer is "${animals[currentTestIndex].translation}".`;
-                testFeedback.className = 'text-lg mt-4 text-center text-red-600';
-                testInput.value = '';
-            }
-        }
+                function checkAnswer() {
+    // Prevent multiple submissions
+    if (testSubmit.disabled) return;
+    
+    const userInput = testInput.value.trim().toLowerCase();
+    const correctAnswer = animals[currentTestIndex].translation.toLowerCase();
+    
+    if (userInput === correctAnswer) {
+        testFeedback.textContent = 'Correct!';
+        testFeedback.className = 'text-lg mt-4 text-center text-green-600';
+        
+        // Disable the submit button temporarily
+        testSubmit.disabled = true;
+        skipTestBtn.disabled = true;
+        
+        setTimeout(() => {
+            currentTestIndex = getRandomTestIndex();
+            showTestQuestion();
+            testSubmit.disabled = false;
+            skipTestBtn.disabled = false;
+        }, 1000);
+    } else {
+        testFeedback.textContent = `Incorrect. The correct answer is "${animals[currentTestIndex].translation}".`;
+        testFeedback.className = 'text-lg mt-4 text-center text-red-600';
+        testInput.value = '';
+    }
+}
         
         function skipQuestion() {
             currentTestIndex = getRandomTestIndex();
